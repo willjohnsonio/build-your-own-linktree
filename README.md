@@ -1,28 +1,28 @@
 # Build Your Own Linktree with Cloudflare Workers
 
-If you just gave a conference or meetup talk and want to share links so attendees can contact you later for questions. You could either ramble off a list of links, and hope that everyone pulls out there phone, opens each app, then type in your username and then click follow. You could list all of your links on your slides but that still requires work on the attendees end. You could just share 1 one of your links and have people connect with you there. 
+If you're at a conference or meetup and want to share links so attendees can contact you later for questions. You could either ramble off a list of links and hope that everyone pulls out their phone, opens each app, then type in your username and then click follow. You could list all of your links on your slides, but that still requires work on the attendee's end. You could just share 1 of your links and have people connect with you there. 
 
-With all of these you potenitally lose out on making great connections in the community because there isn't a good way to share wall the places you can be found online.
+With all of these, you potentially lose out on making great connections in the community because there isn't a good way to share all the places you can be found online.
 
-A better solution would be to create your own custom linktree with Cloudflare Workers. Real quick, a "linktree" is a link to a single page that has a vertical list of different sites that when clicked will take the vistor to that site. You can have all of your online links in one place and share just one link and people can easily check youy out all over the web
+A better solution would be to create your own custom linktree with Cloudflare Workers. Real quick, a "linktree" is a link to a single page that has a vertical list of different sites that, when clicked, will take the visitor to those sites. You can have all of your online links in one place and share just one link, and people can quickly check you out all over the web.
 
 ## What Do You Need To Know
 
-- Comfortable with JavaScript functions, objects, and arrays you will be able to follow along in this tutorial. 
-- You also have need to have [npm insalled](https://docs.npmjs.com/getting-started)
-- sign up for a [Cloudflare Workers account](https://workers.cloudflare.com/)
+- JavaScript functions, objects, loops, and arrays.
+- You also need to have [npm insalled](https://docs.npmjs.com/getting-started)
+- Sign up for a [Cloudflare Workers account](https://workers.cloudflare.com/)
 
 ## Install Wrangler and configure workers project
 
-To get started with a Cloudflare project download and install the Cloudflare workers command line interface(CLI) called Wrangler. In your terminal type `npm install -g @cloudflare/wrangler`
+To get started with a Cloudflare project, download and install the Cloudflare workers command line interface(CLI) called Wrangler. In your terminal, type `npm install -g @cloudflare/wrangler`.
 
-Next you need to link Wrangler with your Cloudflare account to do that in your terminal type `wrangler login` It'll ask if I want to open a page in your browser. Type Y for Yes.
+Next, you need to link Wrangler with your Cloudflare account; to do that in your terminal, type `wrangler login` It'll ask if you want to open a page in your browser. Type Y for Yes.
 
-That should open up a webpage that set's up an API token just for Wrangler. Click Authorize Wrangler. 
+That should open up a webpage that set's up an API token just for Wrangler. Click "Authorize Wrangler". 
 
-Now that you have wrangler installed and linked to your workrers account you can create a new workers project with wrangler in your terminal type `wrangler generate cloudflare-linktree` The `generate` commmand will create a new project and will name it `cloudflare-linktree`. You also have the option add a URL of a [GitHub repo](https://developers.cloudflare.com/workers/get-started/quickstarts) to use as the starteing point template for your project.
+Now that you have wrangler installed and linked to your Workers account, you can create a new Workers project with wrangler. In your terminal type `wrangler generate cloudflare-linktree`. The `generate` command will create a new project and will name it `cloudflare-linktree`. You also have the option to add a URL of a [GitHub repo](https://developers.cloudflare.com/workers/get-started/quickstarts) to use as the starting point template for your project.
 
-Once the project is created open your code editor of choice and inside of your `wrangler.toml` file change the `type` to webpack add your account id that you can copy and paste from the the terminal. If you can't find your account id, you can type `wrangler whoami` to find it as well.
+Once the project is created, open your code editor of choice, and inside of your `wrangler.toml` file, change the `type` to webpack. Add your account id that you can copy and paste from the terminal. If you can't find your account id, you can type `wrangler whoami` to find it as well.
 
 **wrangler.toml**
 ```toml
@@ -35,9 +35,9 @@ route = ""
 zone_id = ""
 ```
 
-## Create Links to Display Them on HTML Page
+## Create a JSON API For Your links
 
-Go to the `index.js` file inside of your workers project. This is where you are going to write the code for your Cloudflare worker. The first thing you would need t o do is create an array of objects with the link name and the url as key value pairs.
+Go to the `index.js` file inside of your workers project. This is where you are going to write the code for your Cloudflare worker. The first thing you would need to do is create an array of objects with the link name and the URL as key value pairs.
 
 
 **index.js**
@@ -57,77 +57,81 @@ const links = [
    }
 ```
 
-Now that you created your links your probaly want to display them to a web page. For this tutorial you'll use a template that localed at `https://static-links-page.signalnerve.workers.dev`. You'll start by making a `fetch` request to that URL and you'll get back and HTML pge. You can change the content of the HTML using the [HTMLRewriter API](https://developers.cloudflare.com/workers/runtime-apis/html-rewriter)
+For the next part, you're going to use the open source project [itty-router](https://github.com/kwhitley/itty-router). It's a small router that works with Cloudflare workers.
 
-HTMLRewriter is a class that lets using JavaScript code to transform HTML. It has has a lot of different methods we can use to change your HTML. Lets started by creating a class called `LinkRewriter`. Inside of the class you add element handlers. Element handlers response to incoming elements when using an `.on` function(will get into the functions later in this post).
+In your terminal type, `npm install itty-router` after itty-router installs, go to `index.js` and at the top of the file type `import { Router } from 'itty-router'
+`. Then create a new variable called router and set it to `Router()` This creates a new instance of the router.
 
+
+**index.js**
 ```js
-class LinkRewriter {
-  element(element) {
-  
-}
-
-```
-
-The element argument that passed into the element handler is a stand in of the DOM element you want to change. Now take your links array and use a `.forEach()` loops to go thorugh every item in the array. Inside of the forEach you'll have a callback function where you name each item in the array the name link to respresent inside of this function. 
-
-Inside the function you'll add element.append() inside of that method pass in the HTML tag in your case it will be an `<a>` tag.
-
-```js
-class LinkRewriter {
-  element(element) {
-      links.forEach(link => {
-          element.append(
-              `<a href="${link.url}" target="_blank">${link.name}</a>`,
-              {
-                  html: true,
-              }
-              
-          )
-      },
-      )
-  }
-}
-```
-
-With the HTMLRewriter class you added URLs of every item in your array with template literal syntax`<a href="${link.url}" target="_blank">${link.name}</a>`,. 
-
-You added `target="_blank"` so the links when open in a new page when clicked. 
-
-Finally, you added an Options Object of `{ html: true }` so HTMLReWriter knows to treat the appended content as raw HTML. 
-
-For the the next part you're going to use an open source project called [itty-router](https://github.com/kwhitley/itty-router) it's a small router that works with Cloudflare workers.
-
-
-## Add Routing to Your Clouddlare worker
-
-In your terminal type `npm install itty-router` after itty-router installs go to `index.js` and at the top of the file type `import { Router } from 'itty-router'
-`. Then create a new variable called router and set it to `Router()` This creates a router.
-
-
-```js
-import { Router } from "itty-router"
-.....
-
-class LinkRewriter {
-  element(element) {
-      links.forEach(link => {
-          element.append(
-              `<a href="${link.url}" target="_blank">${link.name}</a>`,
-              {
-                  html: true,
-              }
-              
-          )
-      },
-      )
-  }
-}
+`import { Router } from 'itty-router'
 
 const router = Router()
 ```
 
-Now you can use the router to tell your application where to go. Call `router` with a `get()` method, pass in * which is called a wildcard route meaning it will work for any router that isn't expicityly named. Next pass a async calledback function. In the callback function created a veriable called `HTMLResponse`, `await` the response by fetching HTMl template you read about earlier.
+Now you want to set up a router that leads to the path /links and return the array as JSON.
+
+**index.js**
+```js
+  router.get("/links", () => {
+  const response = new Response(JSON.stringify(links), {
+  headers: { 'content-type': 'application/json' },
+ })
+
+  return response
+})
+```
+
+In the `get()` function, you passed the `/links` path, then passed a function that creates a new Response and stores `links` in a variable named `response` as a JSON string. Lastly, you passed in a `headers` object with the content type set to JSON.
+
+Run `wrangler dev` in your terminal. This will create a connection between your localhost and the Cloudflare edge server for your worker. The URL defaults to `127.0.0.1:8787`. Visit `127.0.0.1:8787/links`. This will have the links you created showing as JSON. 
+
+
+## Display Your Links on an HTML Page
+
+Now that you created your links you probably want to display them on a web page. For this tutorial, you'll use the template located at `https://static-links-page.signalnerve.workers.dev`. You'll start by making a `fetch` request to that URL and you'll get back an HTML page. You can change the content of the HTML using the [HTMLRewriter API](https://developers.cloudflare.com/workers/runtime-apis/html-rewriter)
+
+HTMLRewriter is a class that lets you use JavaScript code to transform HTML. It has a lot of different methods we can use to change your HTML. Get started by creating a class called `LinkRewriter`. Inside the class, you add element handlers. Element handlers respond to incoming elements when using an `.on` function.
+
+**index.js**
+```js
+class LinkRewriter {
+  element(element) {
+}
+```
+
+The `element` argument that you passed into the element handler represents the DOM element you want to change. 
+
+Now take your links array and use a `.forEach()` loop to go through every item in the array. Inside the  `forEach()`, you'll have a function where you name each item in the array `link` to represent the item when it being looped over. 
+
+Inside the function you'll add `element.append()`. Inside of `append()` pass in the HTML tag in your case it will be an `<a>` tag.
+
+**index.js**
+```js
+class LinkRewriter {
+  element(element) {
+      links.forEach(link => {
+          element.append(
+              `<a href="${link.url}" target="_blank">${link.name}</a>`,
+              {
+                  html: true,
+              }
+              
+          )
+      },
+      )
+  }
+}
+```
+
+With the HTMLRewriter class you added the URLs of every item in your array with template literal syntax`<a href="${link.url}" target="_blank">${link.name}</a>`,. 
+
+You added `target="_blank"` so the links will open in a new page when clicked. 
+
+Finally, you added an options Object of `{ html: true }` so HTMLReWriter knows to treat the appended content as raw HTML. 
+
+Now you can call `router` with a `get()` method, pass in * which is called a wildcard route, meaning it will work for any route that isn't explicitly named. Next, pass an async function. The function creates a variable called `HTMLResponse`, `await` the response and fetches the HTML template.
 
 **index.js**
 ```js
@@ -139,7 +143,7 @@ router.get("*", async () => {
 }
 ```
 
-Next create a varible called response and assign it to a new instance of `HTMLRewriter()`. Add the `.on()` funcrion and pass in the tet DOM element you want to target. In this example you'll be target the CSS id selector `#links` that's already included in the HTML template. After that pass in `LinkRewriter()`. Lastly use the `transform()` function and pass in `HTMLResponse` and return `response`
+Next, create a response variable and assign it to a new instance of `HTMLRewriter()`. Add the `.on()` function and pass in the tet DOM element you want to target. In this example, you'll target the CSS id selector `#links` already included in the HTML template. After that pass in `LinkRewriter()`. Lastly use the `transform()` function and pass in `HTMLResponse` and return `response`
 
 
 **index.js**
@@ -156,8 +160,7 @@ router.get("*", async () => {
   return response
 ```
 
-The final codee you need to change to finish your linktree is the `addEventListner` function that is created  in `index.js` when you generate a new workers project. Currently it listen for any `fetch` event coming to your worker. You have an event object that has the `responsWith()` method call and you pass it `event.request`. This let your worker intercept the fetch request and response with what you want.
-
+The final code you need to change to finish your linktree is the `addEventListner` function created in `index.js` when you generate a new workers project. Currently, it listens for any `fetch` event coming to your worker. You have an event object with the `responsWith()` method call, and you pass it `event.request`. This lets your worker intercept the fetch request and respond with what you want.
 
 **index.js**
 ```js
@@ -168,15 +171,58 @@ addEventListener("fetch", event => {
  
  In `addEventListner()` replace `handleRequest` with `router.handle.` The `handle()` method will return the first matching route handler that returns something (or nothing at all if no match).
  
- 
  **index.js**
- ```js
+ ```diff
  addEventListener('fetch', event => {
-  event.respondWith(router.handle(event.request))
+  - event.respondWith(handleRequest(event.request))
+  + event.respondWith(router.handle(event.request))
 })
  ```
-In your terminal type `wrangler dev` and visit the URL the command line creates for you. If you all of your links are showing up type CTRL + C to steop the server and then type `wrangler publish` in your terminal to deploy to your workers.dev subdomain.
+In your terminal type `wrangler dev` and visit the URL the command line creates for you which should be `127.0.0.1:8787`. If you all of your links show up, type CTRL + C to stop the server.
+
+# Add Your Avatar and Your Name
+
+The template you're using also has an avartar and a name that you can customize. To do that you create two more HTMLRewriters. The first one you'll create is `AvatarRewriter`. In this class, you'll use `element.setArttribute` to target the `src` HTML attribute for `<img>` tags and set it the URL of your avatar.
+
+ **index.js**
+```js
+class AvatarRewriter {
+  element(element) {
+      element.setAttribute("src", "https://avatars.githubusercontent.com/u/40403549?v=4")
+  }
+}
+```
+Next, create a `NameRewriter` and use `setInnerContent()` and pass in your name as a string.
+
+ **index.js**
+```js
+class NameRewriter {
+  element(element) {
+      element.setInnerContent("Will Johnson")
+  }
+}
+```
+Now, you need to add two `on()` functions that target the avatar and name CSS id selectors by passing them into the function. You also will pass in a new `AvatarRewriter()` and `NameRewriter()` to the `on` function.
+
+ **index.js**
+```diff
+router.get("*", async () => {
+  const htmlResponse = await fetch(
+      "https://static-links-page.signalnerve.workers.dev",
+  )
+
+  const response = new HTMLRewriter()
+  .on("#links", new LinkRewriter())
+ + .on("#avatar", new AvatarRewriter())
+ + .on("#name", new NameRewriter())
+  .transform(htmlResponse)
+
+  return response
+```
+In your terminal run `wrangeler dev` to make sure everything works. If everything is good type `wrangler publish` to deploy to your workers.dev subdomain. For example, mine is live at https://cloudflare-linktree.willjohnson.workers.dev/ and my JSON is API is https://cloudflare-linktree.willjohnson.workers.dev/links.
 
 ## Conclusion
 
-Congrats! You downloaded wrangler, created a new workers project, used the HTMLRewriter API to write your won HTML, and add routing to your application. Now you have a linktree on your workers.dev subdomain with your favorite links to share the next time your at a conference or meet up.
+Congrats! You downloaded wrangler, created a new workers project, used the HTMLRewriter API to write your own HTML, and added routing to your application. Now you have a linktree on your workers.dev subdomain with your favorite links to share the next time you are at a conference or meet up.
+
+
