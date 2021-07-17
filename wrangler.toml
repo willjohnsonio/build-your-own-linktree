@@ -1,0 +1,7 @@
+name = "cloudflare-linktree"
+type = "webpack"
+
+account_id = "e7e5c8cde3ca89183f601cfb4b08d80f"
+workers_dev = true
+route = ""
+zone_id = ""
