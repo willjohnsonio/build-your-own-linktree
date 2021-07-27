@@ -35,7 +35,7 @@ zone_id = ""
 ```
 
 ## Create a JSON API For Your links
-Go to the `index.js` file inside of your workers project. This is where you are going to write all the code for your Cloudflare worker. The first thing you would need to do is create an array of objects with the link name and the URL as key value pairs.
+Go to the `index.js` file inside of your workers project. This is where you are going to write all the code for your Cloudflare worker. The first thing you need to do is create an array of objects with the link name and the URL as key value pairs.
 
 
 **index.js**
